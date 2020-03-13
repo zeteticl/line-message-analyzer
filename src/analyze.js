@@ -33,8 +33,8 @@ function changePage() {
 }
 
 document.addEventListener('swup:contentReplaced', (event) => {
-    if (document.querySelector('[chat-title]'))
-        analyse();
+    // if (document.querySelector('[chat-title]'))
+    analyse();
 });
 
 var chatname = ""
@@ -75,7 +75,9 @@ var totalMessages = 0;
 var messageNumAll = 0;
 var unsent = 0;
 
-var options = { minimumCount: 30 };
+var options = {
+    minimumCount: 30
+};
 
 function processlist(cloudlist) {
     var newlist = []
@@ -111,14 +113,12 @@ function getMaxCallTime(time) {
         maxCallTime[1] = time.min;
         maxCallTime[2] = time.sec;
         maxCallDate = dates[dates.length - 1];
-    }
-    else if (parseInt(time.hour) == parseInt(maxCallTime[0]) && parseInt(time.min) > parseInt(maxCallTime[1])) {
+    } else if (parseInt(time.hour) == parseInt(maxCallTime[0]) && parseInt(time.min) > parseInt(maxCallTime[1])) {
         maxCallTime[0] = time.hour;
         maxCallTime[1] = time.min;
         maxCallTime[2] = time.sec;
         maxCallDate = dates[dates.length - 1];
-    }
-    else if (parseInt(time.hour) == parseInt(maxCallTime[0]) && parseInt(time.min) == parseInt(maxCallTime[1]) && parseInt(time.sec) > parseInt(maxCallTime[2])) {
+    } else if (parseInt(time.hour) == parseInt(maxCallTime[0]) && parseInt(time.min) == parseInt(maxCallTime[1]) && parseInt(time.sec) > parseInt(maxCallTime[2])) {
         maxCallTime[0] = time.hour;
         maxCallTime[1] = time.min;
         maxCallTime[2] = time.sec;
@@ -138,15 +138,13 @@ function addTime(splited, time) {
                 maxCallTime[1] = splited[0];
                 maxCallTime[2] = splited[1];
                 maxCallDate = dates[dates.length - 1];
-            }
-            else if (parseInt(splited[0]) == parseInt(maxCallTime[1]) && parseInt(splited[1]) > parseInt(maxCallTime[2])) {
+            } else if (parseInt(splited[0]) == parseInt(maxCallTime[1]) && parseInt(splited[1]) > parseInt(maxCallTime[2])) {
                 maxCallTime[1] = splited[0];
                 maxCallTime[2] = splited[1];
                 maxCallDate = dates[dates.length - 1];
             }
         }
-    }
-    else if (splited.length == 3) {
+    } else if (splited.length == 3) {
         moreThanAHour = 1;
         time.sec += parseInt(splited[2]);
         time.min += parseInt(splited[1]);
@@ -156,14 +154,12 @@ function addTime(splited, time) {
             maxCallTime[1] = splited[1];
             maxCallTime[2] = splited[2];
             maxCallDate = dates[dates.length - 1];
-        }
-        else if (parseInt(splited[0]) == parseInt(maxCallTime[0]) && parseInt(splited[1]) > parseInt(maxCallTime[1])) {
+        } else if (parseInt(splited[0]) == parseInt(maxCallTime[0]) && parseInt(splited[1]) > parseInt(maxCallTime[1])) {
             maxCallTime[0] = splited[0];
             maxCallTime[1] = splited[1];
             maxCallTime[2] = splited[2];
             maxCallDate = dates[dates.length - 1];
-        }
-        else if (parseInt(splited[0]) == parseInt(maxCallTime[0]) && parseInt(splited[1]) == parseInt(maxCallTime[1]) && parseInt(splited[2]) > parseInt(maxCallTime[2])) {
+        } else if (parseInt(splited[0]) == parseInt(maxCallTime[0]) && parseInt(splited[1]) == parseInt(maxCallTime[1]) && parseInt(splited[2]) > parseInt(maxCallTime[2])) {
             maxCallTime[0] = splited[0];
             maxCallTime[1] = splited[1];
             maxCallTime[2] = splited[2];
@@ -179,8 +175,7 @@ function getCallTime(line, time) {
         addTime(splitedAndroid, time);
         if (!environment)
             environment = 1;
-    }
-    else if (line.split(/(\s+)/)[6] != undefined) {
+    } else if (line.split(/(\s+)/)[6] != undefined) {
         if (line.split(/(\s+)/)[6].substring(0, 4) == "通話時間") {
             var beforeSplited = line.split(/(\s+)/)[6].substring(4, line.split(/(\s+)/)[6].length);
             var splitedIOS = beforeSplited.split(":");
@@ -199,8 +194,13 @@ function adjustTime(time) {
 }
 
 function analyse() {
-    lines = content.split("\n");
+    lines = content.split("\n\[");
+    for (i = 1; i < lines; i++) {
+        lines[i] = "[" + lines[i]
+        console.log(lines[i])
+    }
     length = lines.length;
+
     date = new RegExp("^([0-9]{4})([./]{1})([0-9]{1,2})([./]{1})([0-9]{1,2})");
     message = new RegExp("^([\u4e00-\u9fa5]{0,2})([0-9]{1,2})[:]{1}([0-9]{1,2})");
     chatname = lines[0].split(" ")[1]
@@ -227,9 +227,9 @@ function analyse() {
         }
         if (message.test(lines[i].split(/(\s+)/)[0])) { //message
             //new member
-            var membername = lines[i].split(/(\s+)/)[2];
+            var membername = lines[i].match(/(^\[.+\])(.+)\:\s(.*)/)[2];
             if (membername != undefined) {
-                if (!members.includes(membername) && (!membername.includes("收回訊息") && !membername.includes("邀請") && !membername.includes("加入") && !membername.includes("退出") && !membername.includes("更改了群組圖片") && !membername.includes("通話") && !membername.includes("相簿") && !membername.includes("群組名稱") && !membername.includes("已讓") && !membername.includes("離開"))) {
+                if (!members.includes(membername) && (!membername.includes("收回訊息") && !membername.includes("‎You added") && !membername.includes("加入") && !membername.includes("退出") && !membername.includes("更改了群組圖片") && !membername.includes("通話") && !membername.includes("相簿") && !membername.includes("群組名稱") && !membername.includes("已讓") && !membername.includes("離開"))) {
                     console.log(membername)
                     members.push(membername);
                     memberMessageNum[membername] = 0;
@@ -271,8 +271,7 @@ function analyse() {
             console.log(eachMemberMessages[i])
             console.log(eachMemberStickers[i])
             console.log(eachMemberPhotos[i])
-        }
-        else
+        } else
             unsent += eachMemberMessages[i];
     }
     if (unsent)
@@ -296,9 +295,17 @@ function analyse() {
     cloudlist = WordFreqSync(options).process(content);
     cloudlist = processlist(cloudlist);
     if (window.screen.width > 768)
-        WordCloud(document.getElementById('wordcloud'), { list: cloudlist, shrinktofit: true, drawOutOfBound: false });
+        WordCloud(document.getElementById('wordcloud'), {
+            list: cloudlist,
+            shrinktofit: true,
+            drawOutOfBound: false
+        });
     else
-        WordCloud(document.getElementById('wordcloud-mobile'), { list: cloudlist, shrinktofit: true, drawOutOfBound: false });
+        WordCloud(document.getElementById('wordcloud-mobile'), {
+            list: cloudlist,
+            shrinktofit: true,
+            drawOutOfBound: false
+        });
 
 }
 
@@ -380,8 +387,7 @@ function findword() {
     if (window.screen.width > 768) { //responsive on the plots
         var fontsize = 18
         var margin = 50
-    }
-    else {
+    } else {
         var fontsize = 12
         var margin = 45
     }
@@ -408,7 +414,9 @@ function findword() {
     }
     var specificWord = {
         y: wordInADay,
-        line: { shape: 'spline' },
+        line: {
+            shape: 'spline'
+        },
         type: 'scatter'
     };
     var wordLayout = {
@@ -434,7 +442,9 @@ function findword() {
     var wordPlot = [specificWord];
     wordplot = document.getElementById('findingWord')
     wordplot.className = "message-plot word-plot" //remove hidden class
-    Plotly.newPlot('findingWord', wordPlot, wordLayout, { displayModeBar: false });
+    Plotly.newPlot('findingWord', wordPlot, wordLayout, {
+        displayModeBar: false
+    });
 }
 
 function generateDonut(id, valuelist, colorlist) {
@@ -458,8 +468,7 @@ function generatePlots() {
     if (window.screen.width > 768) { //responsive on the plots
         var fontsize = 18
         var margin = 50
-    }
-    else {
+    } else {
         var fontsize = 12
         var margin = 45
     }
@@ -467,7 +476,9 @@ function generatePlots() {
     for (i = 0; i < members.length; i++) {
         memberMessage.push({
             y: memberMessageList[members[i]],
-            line: { shape: 'spline' },
+            line: {
+                shape: 'spline'
+            },
             type: 'scatter',
             name: members[i],
             opacity: 0.5,
@@ -482,13 +493,17 @@ function generatePlots() {
 
     var allMessage = {
         y: messageInADayAll,
-        line: { shape: 'spline' },
+        line: {
+            shape: 'spline'
+        },
         type: 'scatter'
     };
 
     var callTime = {
         y: callSecondInADay,
-        line: { shape: 'spline' },
+        line: {
+            shape: 'spline'
+        },
         type: 'scatter'
     };
 
@@ -557,11 +572,17 @@ function generatePlots() {
     };
 
     var allMessagePlot = [allMessage];
-    Plotly.newPlot('allMessage', allMessagePlot, layout1, { displayModeBar: false });
+    Plotly.newPlot('allMessage', allMessagePlot, layout1, {
+        displayModeBar: false
+    });
 
     var eachMessagePlot = memberMessage;
-    Plotly.newPlot('memberMessage', eachMessagePlot, layout2, { displayModeBar: false });
+    Plotly.newPlot('memberMessage', eachMessagePlot, layout2, {
+        displayModeBar: false
+    });
 
     var callTimePlot = [callTime];
-    Plotly.newPlot('callTime', callTimePlot, layout3, { displayModeBar: false });
+    Plotly.newPlot('callTime', callTimePlot, layout3, {
+        displayModeBar: false
+    });
 }
